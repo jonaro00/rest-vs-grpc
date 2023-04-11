@@ -34,7 +34,7 @@
  
    private void start() throws IOException {
      /* The port on which the server should run */
-     int port = 50051;
+     int port = 1337;
      server = Grpc.newServerBuilderForPort(port, InsecureServerCredentials.create())
          .addService(new GreeterImpl())
          .build()
@@ -79,11 +79,11 @@
      server.blockUntilShutdown();
    }
  
-   static class GreeterImpl extends GreetingServiceGrpc.GreetingServiceImplBase {
+   static class GreeterImpl extends GreetingGrpc.GreetingImplBase {
  
      @Override
      public void greet(HelloRequest req, StreamObserver<HelloResponse> responseObserver) {
-      HelloResponse reply = HelloResponse.newBuilder().setGreeting("Hello " + req.getName()).build();
+      HelloResponse reply = HelloResponse.newBuilder().setGreeting("Hello " + req.getName() + "!").build();
        responseObserver.onNext(reply);
        responseObserver.onCompleted();
      }

@@ -1,4 +1,3 @@
-
 if __name__ != "__main__":
     # Imported by uvicorn -> run FastAPI
 
@@ -27,18 +26,18 @@ else:
     import grpc
     from inventory_pb2 import HelloRequest, HelloResponse
     from inventory_pb2_grpc import (
-        add_GreetingServiceServicer_to_server,
-        GreetingServiceServicer,
+        add_GreetingServicer_to_server,
+        GreetingServicer,
     )
 
-    class Greeter(GreetingServiceServicer):
+    class Greeter(GreetingServicer):
         def Greet(self, request: HelloRequest, context):
             return HelloResponse(greeting=f"Hello {request.name}!")
 
     def serve():
         port = sys.argv[1] if len(sys.argv) >= 2 else "1337"
-        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-        add_GreetingServiceServicer_to_server(Greeter(), server)
+        server = grpc.server(futures.ThreadPoolExecutor())
+        add_GreetingServicer_to_server(Greeter(), server)
         server.add_insecure_port(f"0.0.0.0:{port}")
         server.start()
         server.wait_for_termination()

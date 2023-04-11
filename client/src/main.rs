@@ -33,11 +33,11 @@ mod rest {
 
     pub async fn run(addr: &'static str) -> Result<[i32; 10], Box<dyn std::error::Error>> {
         let client = Client::builder().http1_only().build()?;
-        let arr = &mut [0i32; 10];
+        let mut arr = [0i32; 10];
         let start = std::time::Instant::now();
         loop {
             let req = HelloRequest {
-                name: "Hasbullah".into(),
+                name: "Hasbulla".into(),
             };
             // println!("Sending {:?}", req);
             let _res = client.post(addr).json(&req).send().await?;
@@ -49,17 +49,17 @@ mod rest {
             }
             arr[diff] += 1;
         }
-        Ok(*arr)
+        Ok(arr)
     }
 }
 
 mod grpc {
-    use proto::inventory::{greeting_service_client::GreetingServiceClient, HelloRequest};
+    use proto::inventory::{greeting_client::GreetingClient, HelloRequest};
     use tonic::Request;
 
     pub async fn run(addr: &'static str) -> Result<[i32; 10], Box<dyn std::error::Error>> {
-        let mut client = GreetingServiceClient::connect(addr).await?;
-        let arr = &mut [0i32; 10];
+        let mut client = GreetingClient::connect(addr).await?;
+        let mut arr = [0i32; 10];
         let start = std::time::Instant::now();
         loop {
             let req = Request::new(HelloRequest {
@@ -75,6 +75,6 @@ mod grpc {
             }
             arr[diff] += 1;
         }
-        Ok(*arr)
+        Ok(arr)
     }
 }

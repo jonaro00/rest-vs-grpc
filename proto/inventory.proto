@@ -1,7 +1,18 @@
 syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "inventory";
+option java_outer_classname = "InventoryProto";
+option objc_class_prefix = "INV";
+
+import "google/protobuf/empty.proto";
+
 package inventory;
 
-service GreetingService {
+// A Hello World test service
+
+service Greeting {
+  // Responds with a string greeting the name in the request
   rpc Greet (HelloRequest) returns (HelloResponse);
 }
 
@@ -13,3 +24,66 @@ message HelloResponse {
   string greeting = 1;
 }
 
+
+// A hypothetical Inventory service
+
+service Inventory {
+  // Empty request to check responsiveness
+  rpc HeartBeat (google.protobuf.Empty) returns (google.protobuf.Empty);
+
+  // Get aggregate statistics for all items
+  rpc ItemsStatus (google.protobuf.Empty) returns (ItemsStatusResponse);
+
+  // Get summary for every item
+  rpc ItemsSummary (google.protobuf.Empty) returns (ItemsSummaryResponse);
+
+  // Get full details of every item
+  rpc ItemsFull (google.protobuf.Empty) returns (ItemsFullResponse);
+}
+
+message ItemsStatusResponse {
+  string status = 1;
+  repeated string errors = 2;
+
+  uint32 total_item_count = 10;
+}
+
+message ItemsSummaryResponse {
+
+}
+
+message ItemsFullResponse {
+
+}
+
+enum ItemType {
+  UNSPECIFIED = 0;
+  CHAIR = 1;
+  TABLE = 2;
+  COMPUTER = 3;
+  MONITOR = 4;
+  KEYBOARD = 5;
+  MOUSE = 6;
+}
+
+message ItemDetails {
+  string uuid = 1;
+  ItemType item_type = 2;
+
+  optional string brand = 11;
+  optional string model = 12;
+  optional string serial_number = 13;
+
+  optional float purchase_price = 21;
+  optional bool discarded = 22;
+  optional Location location = 23;
+}
+
+message Location {
+  optional string country = 1;
+  optional string city = 2;
+  optional string building = 3;
+  optional int32 floor = 4;
+  optional int32 room = 5;
+  optional int32 cabinet_position = 6;
+}

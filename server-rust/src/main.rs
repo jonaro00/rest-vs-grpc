@@ -50,15 +50,15 @@ mod grpc {
     use std::net::SocketAddr;
 
     use proto::inventory::{
-        greeting_service_server::{GreetingService, GreetingServiceServer},
+        greeting_server::{Greeting, GreetingServer},
         HelloRequest, HelloResponse,
     };
     use tonic::{transport::Server, Request, Response, Status};
 
-    struct GreetingServer;
+    struct GreetingServerImpl;
 
     #[tonic::async_trait]
-    impl GreetingService for GreetingServer {
+    impl Greeting for GreetingServerImpl {
         async fn greet(
             &self,
             request: Request<HelloRequest>,
@@ -72,9 +72,9 @@ mod grpc {
     }
 
     pub async fn run(addr: SocketAddr) -> Result<(), Box<dyn std::error::Error>> {
-        let server = GreetingServer;
+        let server = GreetingServerImpl;
         Server::builder()
-            .add_service(GreetingServiceServer::new(server))
+            .add_service(GreetingServer::new(server))
             .serve(addr)
             .await?;
         Ok(())
