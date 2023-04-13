@@ -9,7 +9,10 @@ import "google/protobuf/empty.proto";
 
 package inventory;
 
+
+//
 // A Hello World test service
+//
 
 service Greeting {
   // Responds with a string greeting the name in the request
@@ -25,7 +28,9 @@ message HelloResponse {
 }
 
 
+//
 // A hypothetical Inventory service
+//
 
 service Inventory {
   // Empty request to check responsiveness
@@ -44,16 +49,19 @@ service Inventory {
 message ItemsStatusResponse {
   string status = 1;
   repeated string errors = 2;
+  float load = 3;
 
   uint32 total_item_count = 10;
+  float average_price = 11;
+  float total_price = 12;
 }
 
 message ItemsSummaryResponse {
-
+  repeated ItemCitySummary item_city_summaries = 1;
 }
 
 message ItemsFullResponse {
-
+  repeated ItemDetails all_items = 1;
 }
 
 enum ItemType {
@@ -79,11 +87,23 @@ message ItemDetails {
   optional Location location = 23;
 }
 
+message ItemCitySummary {
+  string city_uuid = 1;
+  ItemSummary item_summary = 2;
+}
+
+message ItemSummary {
+  ItemType item_type = 1;
+  uint32 count = 2;
+}
+
 message Location {
-  optional string country = 1;
-  optional string city = 2;
-  optional string building = 3;
-  optional int32 floor = 4;
-  optional int32 room = 5;
-  optional int32 cabinet_position = 6;
+  string city_uuid = 1;
+  optional string country = 2;
+  optional string state = 3;
+  optional string city = 4;
+  optional string building = 5;
+  optional int32 floor = 6;
+  optional int32 room = 7;
+  optional int32 cabinet_position = 8;
 }
