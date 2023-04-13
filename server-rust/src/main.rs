@@ -49,11 +49,18 @@ mod rest {
 mod grpc {
     use std::net::SocketAddr;
 
+    // use lazy_static::lazy_static;
     use proto::inventory::{
         greeting_server::{Greeting, GreetingServer},
         HelloRequest, HelloResponse,
     };
     use tonic::{transport::Server, Request, Response, Status};
+
+    // lazy_static! {
+    //     static ref MSG: HelloResponse = HelloResponse {
+    //         greeting: "Hello there!".into(),
+    //     };
+    // }
 
     struct GreetingServerImpl;
 
