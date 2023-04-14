@@ -5,8 +5,6 @@ option java_package = "inventory";
 option java_outer_classname = "InventoryProto";
 option objc_class_prefix = "INV";
 
-import "google/protobuf/empty.proto";
-
 package inventory;
 
 
@@ -34,17 +32,19 @@ message HelloResponse {
 
 service Inventory {
   // Empty request to check responsiveness
-  rpc HeartBeat (google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc HeartBeat (Empty) returns (Empty);
 
   // Get aggregate statistics for all items
-  rpc ItemsStatus (google.protobuf.Empty) returns (ItemsStatusResponse);
+  rpc ItemsStatus (Empty) returns (ItemsStatusResponse);
 
   // Get summary for every item
-  rpc ItemsSummary (google.protobuf.Empty) returns (ItemsSummaryResponse);
+  rpc ItemsSummary (Empty) returns (ItemsSummaryResponse);
 
   // Get full details of every item
-  rpc ItemsFull (google.protobuf.Empty) returns (ItemsFullResponse);
+  rpc ItemsFull (Empty) returns (ItemsFullResponse);
 }
+
+message Empty {}
 
 message ItemsStatusResponse {
   string status = 1;
@@ -52,8 +52,8 @@ message ItemsStatusResponse {
   float load = 3;
 
   uint32 total_item_count = 10;
-  float average_price = 11;
   float total_price = 12;
+  float average_price = 11;
 }
 
 message ItemsSummaryResponse {

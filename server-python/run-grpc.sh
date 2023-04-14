@@ -1,1 +1,1 @@
-python main.py 1337
+python grpc-server.py 1337
