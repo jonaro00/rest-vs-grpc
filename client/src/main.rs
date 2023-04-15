@@ -34,12 +34,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             _ => panic!("provide 'xs' or 's' or 'm' or 'l'"),
         })
         .unwrap();
+    let host = args.next().unwrap_or("127.0.0.1".into());
+    let port = args.next().unwrap_or("1337".into());
 
-    let addr = "http://127.0.0.1:1337";
+    let addr = format!("http://{host}:{port}");
 
     let arr = match mode {
-        Mode::Rest => rest::run(addr, size).await?,
-        Mode::GRPC => grpc::run(addr, size).await?,
+        Mode::Rest => rest::run(addr.clone(), size).await?,
+        Mode::GRPC => grpc::run(addr.clone(), size).await?,
     };
 
     println!("{arr:?}");
@@ -51,22 +53,12 @@ mod rest {
     use std::time::Instant;
 
     use reqwest::Client;
-    use serde::{Deserialize, Serialize};
     use tokio::task::JoinSet;
 
     use crate::{PayloadSize, SECONDS};
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct HelloRequest {
-        name: String,
-    }
-    #[derive(Debug, Serialize, Deserialize)]
-    struct HelloResponse {
-        greeting: String,
-    }
-
     pub async fn run(
-        addr: &str,
+        addr: String,
         size: PayloadSize,
     ) -> Result<[i32; SECONDS], Box<dyn std::error::Error>> {
         let client = Client::builder().http1_only().build()?;
@@ -127,7 +119,7 @@ mod grpc {
     use crate::{PayloadSize, SECONDS};
 
     pub async fn run(
-        addr: &'static str,
+        addr: String,
         size: PayloadSize,
     ) -> Result<[i32; SECONDS], Box<dyn std::error::Error>> {
         let client = InventoryClient::connect(addr).await?;
