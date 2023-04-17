@@ -50,7 +50,7 @@ class Inventory(InventoryServicer):
                         count=12,
                     ),
                 )
-            ] * 1024,
+            ] * 512,
         )
     def ItemsFull(self, request: Empty, context):
         return ItemsFullResponse(
@@ -74,7 +74,7 @@ class Inventory(InventoryServicer):
                         cabinet_position=None,
                     ),
                 )
-            ] * 1234,
+            ] * 4096,
         )
 
 

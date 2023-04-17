@@ -3,8 +3,9 @@ const SECONDS: usize = 10;
 
 enum Mode {
     Rest,
-    GRPC,
+    Grpc,
 }
+
 #[derive(Clone, Copy)]
 pub enum PayloadSize {
     XS,
@@ -20,7 +21,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .next()
         .map(|m| match m.as_str() {
             "rest" => Mode::Rest,
-            "grpc" => Mode::GRPC,
+            "grpc" => Mode::Grpc,
             _ => panic!("provide 'rest' or 'grpc'"),
         })
         .unwrap();
@@ -41,7 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let arr = match mode {
         Mode::Rest => rest::run(addr.clone(), size).await?,
-        Mode::GRPC => grpc::run(addr.clone(), size).await?,
+        Mode::Grpc => grpc::run(addr.clone(), size).await?,
     };
 
     println!("{arr:?}");
@@ -73,7 +74,7 @@ mod rest {
             }
         );
         let start = std::time::Instant::now();
-        let n = 128;
+        let n = 64;
         let mut set = JoinSet::new();
         for _ in 0..n {
             set.spawn(spam(client.clone(), start, addr.clone()));
@@ -96,8 +97,9 @@ mod rest {
     async fn spam(client: Client, start: Instant, endpoint: String) -> [i32; SECONDS] {
         let mut arr = [0i32; SECONDS];
         loop {
-            let _res = client.get(&endpoint).send().await.unwrap();
+            let res = client.get(&endpoint).send().await.unwrap();
             // println!("Got response {:?}", res);
+            res.bytes().await.unwrap(); // Consume the body
             let now = std::time::Instant::now();
             let diff = now.duration_since(start).as_secs() as usize;
             if diff >= arr.len() {
@@ -155,20 +157,16 @@ mod grpc {
             match size {
                 PayloadSize::XS => {
                     client.heart_beat(req).await.unwrap();
-                    ()
-                },
+                }
                 PayloadSize::S => {
                     client.items_status(req).await.unwrap();
-                    ()
-                },
+                }
                 PayloadSize::M => {
                     client.items_summary(req).await.unwrap();
-                    ()
-                },
+                }
                 PayloadSize::L => {
                     client.items_full(req).await.unwrap();
-                    ()
-                },
+                }
             };
             let now = std::time::Instant::now();
             let diff = now.duration_since(start).as_secs() as usize;

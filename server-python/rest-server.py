@@ -1,7 +1,7 @@
 from enum import Enum
 
 from fastapi import FastAPI
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import ORJSONResponse, Response
 from pydantic import BaseModel
 
 
@@ -60,7 +60,7 @@ app = FastAPI()
 
 @app.get("/heart_beat")
 async def heart_beat():
-    return ""
+    return Response() # empty 200 response
 
 @app.get("/items_status", response_class=ORJSONResponse)
 async def items_status():
@@ -93,7 +93,7 @@ async def items_summary():
                     count=12,
                 ),
             )
-        ] * 1024,
+        ] * 512,
     )
 
 @app.get("/items_full", response_class=ORJSONResponse)
@@ -119,5 +119,5 @@ async def items_full():
                     cabinet_position=None,
                 ),
             )
-        ] * 1234,
+        ] * 4096,
     )
