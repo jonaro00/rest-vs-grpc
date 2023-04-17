@@ -93,7 +93,7 @@ async def items_summary():
                     count=12,
                 ),
             )
-        ] * 512,
+        ] * 480,
     )
 
 @app.get("/items_full", response_class=ORJSONResponse)
@@ -119,5 +119,5 @@ async def items_full():
                     cabinet_position=None,
                 ),
             )
-        ] * 4096,
+        ] * 1395,
     )

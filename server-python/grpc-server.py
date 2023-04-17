@@ -74,7 +74,7 @@ class Inventory(InventoryServicer):
                         cabinet_position=None,
                     ),
                 )
-            ] * 4096,
+            ] * 2048,
         )
 
 
