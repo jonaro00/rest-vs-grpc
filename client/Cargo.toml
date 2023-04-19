@@ -6,6 +6,8 @@ edition = "2021"
 [dependencies]
 proto = { workspace = true }
 
+anyhow = { workspace = true }
+async-trait = { workspace = true }
 reqwest = { workspace = true }
 tokio = { workspace = true }
 tonic = { workspace = true }
