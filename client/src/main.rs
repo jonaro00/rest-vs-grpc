@@ -2,13 +2,14 @@ use std::time::{Duration, Instant};
 
 use anyhow::Result;
 use async_trait::async_trait;
-use proto::inventory::inventory_client::InventoryClient;
+use proto::inventory::{inventory_client::InventoryClient, Empty};
 use reqwest::Client;
 use tokio::{
     select, spawn,
     sync::mpsc::{channel, Sender},
     time::{sleep, sleep_until},
 };
+use tonic::{transport::Channel, Request};
 
 /// The number of seconds to test each step to wards finding optimal thread count
 const DISCOVERY_SECONDS: usize = 10;
@@ -42,27 +43,25 @@ async fn main() -> Result<()> {
 
     let addr = format!("http://{host}:{port}");
 
-    let arr = match mode {
+    match mode {
         Mode::Rest => {
-            rest::RestSpammer {
+            RestSpammer {
                 addr,
                 size,
                 client: Client::builder().http1_only().build()?,
             }
             .run()
-            .await?
+            .await;
         }
         Mode::Grpc => {
-            grpc::GrpcSpammer {
+            GrpcSpammer {
                 size,
                 client: InventoryClient::connect(addr).await?,
             }
             .run()
-            .await?
+            .await;
         }
     };
-
-    println!("{arr:?}");
 
     Ok(())
 }
@@ -73,7 +72,7 @@ enum Mode {
 }
 
 #[derive(Clone, Copy)]
-pub enum PayloadSize {
+enum PayloadSize {
     XS,
     S,
     M,
@@ -87,11 +86,11 @@ enum AdjustmentStrategy {
 }
 
 #[async_trait]
-trait RequestSpammer: Clone + Send + Sync + 'static {
+trait RequestSpammer: Clone + 'static {
     /// Run a stress test by spawning clients with `self.spam`,
     /// counting the completed requests. The number of clients
     /// adjust to find the optimal throughput.
-    async fn run(&self) -> Result<[i32; DISCOVERY_SECONDS]> {
+    async fn run(&self) {
         let mut clients = 1;
         let mut best_avg = 0.0;
         let mut strategy = AdjustmentStrategy::Exponential;
@@ -121,14 +120,15 @@ trait RequestSpammer: Clone + Send + Sync + 'static {
                     arr[sec] += 1;
                 }
             }
-            let avg = f64::from(arr.iter().sum::<i32>()) / f64::from(arr.len() as u32);
-            println!("{arr:?}, {avg}");
 
             // stop spammers
             for s in &spammers {
                 s.abort();
             }
             spammers.clear();
+
+            let avg = f64::from(arr.iter().sum::<i32>()) / f64::from(arr.len() as u32);
+            println!("{arr:?}, {avg}");
 
             match strategy {
                 AdjustmentStrategy::Exponential => {
@@ -163,103 +163,106 @@ trait RequestSpammer: Clone + Send + Sync + 'static {
 
             sleep(Duration::from_secs(5)).await;
         }
-        let arr = [0i32; DISCOVERY_SECONDS];
-        Ok(arr)
+
+        // Run final test
+        println!("Running test with {} clients...", clients);
+        let start = Instant::now();
+        let end = start
+            .checked_add(Duration::from_secs(TEST_SECONDS as u64))
+            .unwrap()
+            .into();
+
+        let (tx, mut rx) = channel::<usize>(4096);
+        for _ in 0..clients {
+            spammers.push(spawn(self.clone().spam(start, tx.clone())));
+        }
+        let mut arr = [0i32; TEST_SECONDS];
+        while let Some(sec) = select! {
+            sec = rx.recv() => sec,
+            _ = sleep_until(end) => None,
+        } {
+            if sec < TEST_SECONDS {
+                arr[sec] += 1;
+            }
+        }
+        for s in &spammers {
+            s.abort();
+        }
+        spammers.clear();
+        let avg = f64::from(arr.iter().sum::<i32>()) / f64::from(arr.len() as u32);
+        println!("{arr:?}, {avg}");
     }
 
     /// Sends requests sequentially in an infinite loop.
     async fn spam(self, start: Instant, tx: Sender<usize>) -> Result<()>;
 }
 
-mod rest {
-    use std::time::Instant;
+#[derive(Clone)]
+struct RestSpammer {
+    addr: String,
+    size: PayloadSize,
+    client: Client,
+}
 
-    use anyhow::Result;
-    use async_trait::async_trait;
-    use reqwest::Client;
-    use tokio::sync::mpsc::Sender;
-
-    use crate::{PayloadSize, RequestSpammer};
-
-    #[derive(Clone)]
-    pub struct RestSpammer {
-        pub addr: String,
-        pub size: PayloadSize,
-        pub client: Client,
-    }
-
-    #[async_trait]
-    impl RequestSpammer for RestSpammer {
-        async fn spam(mut self, start: Instant, tx: Sender<usize>) -> Result<()> {
-            let endpoint = format!(
-                "{}{}",
-                self.addr,
-                match self.size {
-                    PayloadSize::XS => "/heart_beat",
-                    PayloadSize::S => "/items_status",
-                    PayloadSize::M => "/items_summary",
-                    PayloadSize::L => "/items_full",
-                }
-            );
-            loop {
-                if let Ok(res) = self.client.get(&endpoint).send().await {
-                    // println!("Got response {:?}", res);
-                    // Consume the body
-                    if res.bytes().await.is_err() {
-                        eprintln!("Request failed");
-                    } else {
-                        let now = Instant::now();
-                        let diff = now.duration_since(start).as_secs() as usize;
-                        tx.send(diff).await.unwrap();
-                    };
-                } else {
+#[async_trait]
+impl RequestSpammer for RestSpammer {
+    async fn spam(mut self, start: Instant, tx: Sender<usize>) -> Result<()> {
+        let endpoint = format!(
+            "{}{}",
+            self.addr,
+            match self.size {
+                PayloadSize::XS => "/heart_beat",
+                PayloadSize::S => "/items_status",
+                PayloadSize::M => "/items_summary",
+                PayloadSize::L => "/items_full",
+            }
+        );
+        loop {
+            if let Ok(res) = self.client.get(&endpoint).send().await {
+                // println!("Got response {:?}", res);
+                // Consume the body
+                if res.bytes().await.is_err() {
                     eprintln!("Request failed");
-                }
+                } else {
+                    let now = Instant::now();
+                    let diff = now.duration_since(start).as_secs() as usize;
+                    tx.send(diff).await.unwrap();
+                };
+            } else {
+                eprintln!("Request failed");
             }
         }
     }
 }
 
-mod grpc {
-    use std::time::Instant;
+#[derive(Clone)]
+struct GrpcSpammer {
+    size: PayloadSize,
+    client: InventoryClient<Channel>,
+}
 
-    use anyhow::Result;
-    use async_trait::async_trait;
-    use proto::inventory::{inventory_client::InventoryClient, Empty};
-    use tokio::sync::mpsc::Sender;
-    use tonic::{transport::Channel, Request};
-
-    use crate::{PayloadSize, RequestSpammer};
-
-    #[derive(Clone)]
-    pub struct GrpcSpammer {
-        pub size: PayloadSize,
-        pub client: InventoryClient<Channel>,
-    }
-
-    #[async_trait]
-    impl RequestSpammer for GrpcSpammer {
-        async fn spam(mut self, start: Instant, tx: Sender<usize>) -> Result<()> {
-            loop {
-                let req = Request::new(Empty {});
-                match self.size {
-                    PayloadSize::XS => {
-                        self.client.heart_beat(req).await.unwrap();
-                    }
-                    PayloadSize::S => {
-                        self.client.items_status(req).await.unwrap();
-                    }
-                    PayloadSize::M => {
-                        self.client.items_summary(req).await.unwrap();
-                    }
-                    PayloadSize::L => {
-                        self.client.items_full(req).await.unwrap();
-                    }
-                };
-                let now = Instant::now();
-                let diff = now.duration_since(start).as_secs() as usize;
-                tx.send(diff).await?;
-            }
+#[async_trait]
+impl RequestSpammer for GrpcSpammer {
+    async fn spam(mut self, start: Instant, tx: Sender<usize>) -> Result<()> {
+        loop {
+            let req = Request::new(Empty {});
+            match self.size {
+                PayloadSize::XS => {
+                    self.client.heart_beat(req).await.unwrap();
+                }
+                PayloadSize::S => {
+                    self.client.items_status(req).await.unwrap();
+                }
+                PayloadSize::M => {
+                    self.client.items_summary(req).await.unwrap();
+                }
+                PayloadSize::L => {
+                    self.client.items_full(req).await.unwrap();
+                }
+            };
+            let now = Instant::now();
+            let diff = now.duration_since(start).as_secs() as usize;
+            tx.send(diff).await?;
         }
     }
 }

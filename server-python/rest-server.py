@@ -111,7 +111,7 @@ async def items_full():
                 location=Location(
                     city_uuid="a6a94b16-9aae-432a-9ef3-b11ff4d49709",
                     country="SE",
-                    state="AB",
+                    state=None,
                     city="Stockholm",
                     building="Electrum",
                     floor=3,

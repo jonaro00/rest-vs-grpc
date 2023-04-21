@@ -7,7 +7,6 @@ edition = "2021"
 proto = { workspace = true }
 
 axum = { workspace = true }
-lazy_static = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 tokio = { workspace = true }

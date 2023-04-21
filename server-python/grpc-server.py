@@ -50,7 +50,7 @@ class Inventory(InventoryServicer):
                         count=12,
                     ),
                 )
-            ] * 512,
+            ] * 480,
         )
     def ItemsFull(self, request: Empty, context):
         return ItemsFullResponse(
@@ -66,7 +66,7 @@ class Inventory(InventoryServicer):
                     location=Location(
                         city_uuid="a6a94b16-9aae-432a-9ef3-b11ff4d49709",
                         country="SE",
-                        state="AB",
+                        state=None,
                         city="Stockholm",
                         building="Electrum",
                         floor=3,
@@ -74,7 +74,7 @@ class Inventory(InventoryServicer):
                         cabinet_position=None,
                     ),
                 )
-            ] * 2048,
+            ] * 1395,
         )
 
 
