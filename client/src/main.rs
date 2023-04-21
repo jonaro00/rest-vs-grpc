@@ -246,20 +246,43 @@ impl RequestSpammer for GrpcSpammer {
     async fn spam(mut self, start: Instant, tx: Sender<usize>) -> Result<()> {
         loop {
             let req = Request::new(Empty {});
-            match self.size {
+            let success = match self.size {
                 PayloadSize::XS => {
-                    self.client.heart_beat(req).await.unwrap();
+                    if self.client.heart_beat(req).await.is_err() {
+                        eprintln!("Request failed");
+                        false
+                    } else {
+                        true
+                    }
                 }
                 PayloadSize::S => {
-                    self.client.items_status(req).await.unwrap();
+                    if self.client.items_status(req).await.is_err() {
+                        eprintln!("Request failed");
+                        false
+                    } else {
+                        true
+                    }
                 }
                 PayloadSize::M => {
-                    self.client.items_summary(req).await.unwrap();
+                    if self.client.items_summary(req).await.is_err() {
+                        eprintln!("Request failed");
+                        false
+                    } else {
+                        true
+                    }
                 }
                 PayloadSize::L => {
-                    self.client.items_full(req).await.unwrap();
+                    if self.client.items_full(req).await.is_err() {
+                        eprintln!("Request failed");
+                        false
+                    } else {
+                        true
+                    }
                 }
             };
+            if !success {
+                continue;
+            }
             let now = Instant::now();
             let diff = now.duration_since(start).as_secs() as usize;
             tx.send(diff).await?;
