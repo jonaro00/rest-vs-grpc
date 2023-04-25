@@ -79,12 +79,6 @@ enum PayloadSize {
     L,
 }
 
-enum AdjustmentStrategy {
-    Exponential,
-    BinarySearch,
-    Stopped,
-}
-
 #[async_trait]
 trait RequestSpammer: Clone + 'static {
     /// Run a stress test by spawning clients with `self.spam`,
@@ -93,9 +87,7 @@ trait RequestSpammer: Clone + 'static {
     async fn run(&self) {
         let mut clients = 1;
         let mut best_avg = 0.0;
-        let mut strategy = AdjustmentStrategy::Exponential;
-        let mut step_size = 1;
-        let mut spammers = Vec::with_capacity(128);
+        let mut spammers = Vec::new();
         loop {
             println!("Trying with {} clients...", clients);
             let start = Instant::now();
@@ -128,35 +120,13 @@ trait RequestSpammer: Clone + 'static {
             spammers.clear();
 
             let avg = f64::from(arr.iter().sum::<i32>()) / f64::from(arr.len() as u32);
-            println!("{arr:?}, {avg}");
+            println!("{arr:?} avg {avg}");
 
-            match strategy {
-                AdjustmentStrategy::Exponential => {
-                    if avg > best_avg {
-                        best_avg = avg;
-                        step_size = clients;
-                        clients *= 2;
-                    } else {
-                        strategy = AdjustmentStrategy::BinarySearch;
-                        step_size /= 2;
-                        clients -= step_size;
-                    }
-                }
-                AdjustmentStrategy::BinarySearch => {
-                    step_size /= 2;
-                    if avg > best_avg && step_size > 0 {
-                        best_avg = avg;
-                        clients += step_size;
-                    } else if step_size > 0 {
-                        clients -= step_size;
-                    } else {
-                        strategy = AdjustmentStrategy::Stopped;
-                        clients = 1.max(clients - 1);
-                    }
-                }
-                _ => panic!(),
-            }
-            if matches!(strategy, AdjustmentStrategy::Stopped) {
+            if avg > 1.02 * best_avg {
+                best_avg = avg;
+                clients *= 2;
+            } else {
+                clients /= 2;
                 println!("Choosing {} clients.", clients);
                 break;
             }

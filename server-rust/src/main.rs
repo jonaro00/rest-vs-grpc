@@ -111,7 +111,7 @@ mod rest {
                 ItemCitySummary {
                     city_uuid: "50f15f5b-78b5-45b4-9bf0-6d3691e606fe".into(),
                     item_summary: ItemSummary {
-                        item_type: ItemType::Computer.into(),
+                        item_type: ItemType::Computer,
                         count: 12
                     }
                 };
@@ -125,7 +125,7 @@ mod rest {
             all_items: vec![
                 ItemDetails {
                     uuid: "6b99bcc5-4db2-4f15-95e9-0eb4d7762eb9".into(),
-                    item_type: ItemType::Computer.into(),
+                    item_type: ItemType::Computer,
                     brand: Some("Ferris".into()),
                     model: Some("Crab Hammer".into()),
                     serial_number: Some("SN1605984635".into()),
