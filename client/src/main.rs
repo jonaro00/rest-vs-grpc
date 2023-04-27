@@ -11,11 +11,14 @@ use tokio::{
 };
 use tonic::{transport::Channel, Request};
 
-/// The number of seconds to test each step to wards finding optimal thread count
+/// The number of seconds to test each step when finding optimal thread count
 const DISCOVERY_SECONDS: usize = 10;
 
-/// The number of seconds to run the test for
+/// The number of seconds to run the final test for
 const TEST_SECONDS: usize = 100;
+
+/// The number of seconds to run spammers before measuring anything
+const WARMUP_SECONDS: usize = 1;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -50,7 +53,7 @@ async fn main() -> Result<()> {
                 size,
                 client: Client::builder().http1_only().build()?,
             }
-            .run()
+            .run_full_test()
             .await;
         }
         Mode::Grpc => {
@@ -58,7 +61,7 @@ async fn main() -> Result<()> {
                 size,
                 client: InventoryClient::connect(addr).await?,
             }
-            .run()
+            .run_full_test()
             .await;
         }
     };
@@ -81,86 +84,77 @@ enum PayloadSize {
 
 #[async_trait]
 trait RequestSpammer: Clone + 'static {
-    /// Run a stress test by spawning clients with `self.spam`,
-    /// counting the completed requests. The number of clients
-    /// adjust to find the optimal throughput.
-    async fn run(&self) {
-        let mut clients = 1;
+    /// Runs small stress tests to find the optimal throughput.
+    /// Then runs a large stress test.
+    async fn run_full_test(&self) {
+        let mut clients = 2;
+
+        // Increase number of clients until throughput flattens out
         let mut best_avg = 0.0;
-        let mut spammers = Vec::new();
         loop {
             println!("Trying with {} clients...", clients);
-            let start = Instant::now();
-            let end = start
-                .checked_add(Duration::from_secs(DISCOVERY_SECONDS as u64))
-                .unwrap()
-                .into();
+            let (vec, avg) = self.run_one_test(clients, DISCOVERY_SECONDS).await;
 
-            // Adjust spammer count
-            let (tx, mut rx) = channel::<usize>(4096);
-            for _ in 0..clients {
-                spammers.push(spawn(self.clone().spam(start, tx.clone())));
-            }
-
-            // Collect requests until time is up
-            let mut arr = [0i32; DISCOVERY_SECONDS];
-            while let Some(sec) = select! {
-                sec = rx.recv() => sec,
-                _ = sleep_until(end) => None,
-            } {
-                if sec < DISCOVERY_SECONDS {
-                    arr[sec] += 1;
-                }
-            }
-
-            // stop spammers
-            for s in &spammers {
-                s.abort();
-            }
-            spammers.clear();
-
-            let avg = f64::from(arr.iter().sum::<i32>()) / f64::from(arr.len() as u32);
-            println!("{arr:?} avg {avg}");
+            println!("{vec:?} avg {avg}");
 
             if avg > 1.02 * best_avg {
                 best_avg = avg;
                 clients *= 2;
             } else {
-                clients /= 2;
+                if avg <= best_avg {
+                    clients /= 2;
+                }
                 println!("Choosing {} clients.", clients);
                 break;
             }
 
-            sleep(Duration::from_secs(5)).await;
+            sleep(Duration::from_secs(3)).await;
         }
 
         // Run final test
         println!("Running test with {} clients...", clients);
+        let (vec, avg) = self.run_one_test(clients, TEST_SECONDS).await;
+
+        println!("{vec:?} avg {avg}");
+    }
+
+    /// Run a stress test by spawning clients with `self.spam`,
+    /// counting the completed requests. Returns array with number
+    /// of completed requests per second and the average.
+    async fn run_one_test(&self, clients: usize, seconds: usize) -> (Vec<i32>, f64) {
+        let mut spammers = Vec::with_capacity(clients);
         let start = Instant::now();
         let end = start
-            .checked_add(Duration::from_secs(TEST_SECONDS as u64))
+            .checked_add(Duration::from_secs((seconds + WARMUP_SECONDS) as u64))
             .unwrap()
             .into();
 
+        // Adjust spammer count
         let (tx, mut rx) = channel::<usize>(4096);
         for _ in 0..clients {
             spammers.push(spawn(self.clone().spam(start, tx.clone())));
         }
-        let mut arr = [0i32; TEST_SECONDS];
+
+        // Collect requests until time is up
+        let mut vec = vec![0i32; seconds];
         while let Some(sec) = select! {
             sec = rx.recv() => sec,
             _ = sleep_until(end) => None,
         } {
-            if sec < TEST_SECONDS {
-                arr[sec] += 1;
+            if sec >= WARMUP_SECONDS && sec - WARMUP_SECONDS < seconds {
+                vec[sec - WARMUP_SECONDS] += 1;
             }
         }
+
+        // stop spammers
         for s in &spammers {
             s.abort();
         }
         spammers.clear();
-        let avg = f64::from(arr.iter().sum::<i32>()) / f64::from(arr.len() as u32);
-        println!("{arr:?}, {avg}");
+
+        let avg = f64::from(vec.iter().sum::<i32>()) / f64::from(vec.len() as u32);
+
+        (vec, avg)
     }
 
     /// Sends requests sequentially in an infinite loop.
@@ -255,7 +249,7 @@ impl RequestSpammer for GrpcSpammer {
             }
             let now = Instant::now();
             let diff = now.duration_since(start).as_secs() as usize;
-            tx.send(diff).await?;
+            tx.send(diff).await.unwrap();
         }
     }
 }

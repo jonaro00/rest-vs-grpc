@@ -100,7 +100,7 @@ mod rest {
             ],
             load: 0.95,
             total_item_count: 12345,
-            total_price: 670432.51,
+            total_price: 670432.55,
             average_price: 56.07,
         })
     }
@@ -197,7 +197,7 @@ mod grpc {
                 ],
                 load: 0.95,
                 total_item_count: 12345,
-                total_price: 670432.51,
+                total_price: 670432.55,
                 average_price: 56.07,
             }))
         }
