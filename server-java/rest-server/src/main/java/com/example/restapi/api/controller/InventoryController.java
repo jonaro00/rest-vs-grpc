@@ -1,8 +1,6 @@
 package com.example.restapi.api.controller;
 
 import com.example.restapi.api.item.ItemsStatusResponse;
-import com.example.restapi.api.model.Message;
-import com.example.restapi.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,28 +21,11 @@ import java.util.Arrays;
 import java.util.Optional;
 
 @RestController
-public class MessageController {
-
-    private MessageService messageService;
-
-    @Autowired
-    public MessageController(MessageService messageService) {
-        this.messageService = messageService;
-    }
-    // curl http://localhost:8080/message?id=1
-
-    @GetMapping("/message")
-    public Message getMessage(@RequestParam Integer id) {
-        Optional message = messageService.getMessage(id);
-        if (message.isPresent()) {
-            return (Message) message.get();
-        }
-        return null;
-    }
+public class InventoryController {
 
     @GetMapping("/heart_beat")
-    public ResponseEntity<String> heartBeat() {
-        return ResponseEntity.ok().body("");
+    public ResponseEntity<Void> heartBeat() {
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/items_status")
@@ -84,7 +65,7 @@ public class MessageController {
     @GetMapping("/items_full")
     public ItemsFullResponse getItemsFull() {
         List<ItemDetails> allItems = new ArrayList<>();
-    
+
         // Create a single ItemDetails object with the desired details
         ItemDetails item = new ItemDetails();
         item.setUuid("6b99bcc5-4db2-4f15-95e9-0eb4d7762eb9");
@@ -102,17 +83,14 @@ public class MessageController {
         location.setFloor(3);
         location.setRoom(301);
         item.setLocation(location);
-    
+
         // Add 1395 copies of the ItemDetails object to the allItems list
         // O(n)
         for (int i = 0; i < 1395; i++) {
             allItems.add(item);
         }
-    
+
         // Create a new ItemsFullResponse object with the allItems list and return it
         return new ItemsFullResponse(allItems);
     }
-    
-
-    
 }

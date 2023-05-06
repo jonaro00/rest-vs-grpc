@@ -1,7 +1,7 @@
-package org.example.server;
+package inventory.server;
 
 import io.grpc.stub.StreamObserver;
-import org.example.*;
+import inventory.*;
 import org.lognet.springboot.grpc.GRpcService;
 
 import java.util.ArrayList;
@@ -17,7 +17,6 @@ public class InventoryServiceImpl extends InventoryGrpc.InventoryImplBase {
         responseObserver.onNext(Empty.getDefaultInstance());
         responseObserver.onCompleted();
     }
-
 
     @Override
     public void itemsStatus(Empty request, StreamObserver<ItemsStatusResponse> responseObserver) {
@@ -44,7 +43,6 @@ public class InventoryServiceImpl extends InventoryGrpc.InventoryImplBase {
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
-
 
     @Override
     public void itemsSummary(Empty request, StreamObserver<ItemsSummaryResponse> responseObserver) {
@@ -97,6 +95,4 @@ public class InventoryServiceImpl extends InventoryGrpc.InventoryImplBase {
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
-
-
 }
