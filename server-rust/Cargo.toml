@@ -8,6 +8,5 @@ proto = { workspace = true }
 
 axum = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-serde_json = { workspace = true }
 tokio = { workspace = true }
 tonic = { workspace = true }
