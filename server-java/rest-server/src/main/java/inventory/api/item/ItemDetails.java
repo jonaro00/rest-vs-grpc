@@ -1,4 +1,4 @@
-package com.example.restapi.api.item;
+package inventory.api.item;
 
 public class ItemDetails {
     private String uuid;
@@ -9,8 +9,6 @@ public class ItemDetails {
     private Double purchasePrice;
     private Boolean discarded;
     private Location location;
-
-    public ItemDetails() {}
 
     public ItemDetails(String uuid, ItemType itemType, String brand, String model,
             String serialNumber, Double purchasePrice, Boolean discarded, Location location) {

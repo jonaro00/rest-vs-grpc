@@ -1,11 +1,8 @@
-package com.example.restapi.api.item;
+package inventory.api.item;
 
 public class ItemSummary {
     private ItemType itemType;
     private int count;
-
-    public ItemSummary() {
-    }
 
     public ItemSummary(ItemType itemType, int count) {
         this.itemType = itemType;

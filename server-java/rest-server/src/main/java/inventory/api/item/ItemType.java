@@ -1,4 +1,4 @@
-package com.example.restapi.api.item;
+package inventory.api.item;
 
 public enum ItemType {
     UNSPECIFIED("UNSPECIFIED"),

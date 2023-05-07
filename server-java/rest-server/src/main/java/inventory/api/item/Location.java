@@ -1,21 +1,33 @@
-package com.example.restapi.api.item;
+package inventory.api.item;
 
 public class Location {
-    private String city_uuid;
+    private String cityUuid;
     private String country;
     private String state;
     private String city;
     private String building;
     private Integer floor;
     private Integer room;
-    private Integer cabinet_position;
+    private Integer cabinetPosition;
 
-    public String getCity_uuid() {
-        return city_uuid;
+    public Location(String cityUuid, String country, String state, String city,
+            String building, Integer floor, Integer room, Integer cabinetPosition) {
+        this.cityUuid = cityUuid;
+        this.country = country;
+        this.state = state;
+        this.city = city;
+        this.building = building;
+        this.floor = floor;
+        this.room = room;
+        this.cabinetPosition = cabinetPosition;
     }
 
-    public void setCity_uuid(String city_uuid) {
-        this.city_uuid = city_uuid;
+    public String getCityUuid() {
+        return cityUuid;
+    }
+
+    public void setCityUuid(String cityUuid) {
+        this.cityUuid = cityUuid;
     }
 
     public String getCountry() {
@@ -67,10 +79,10 @@ public class Location {
     }
 
     public Integer getCabinet_position() {
-        return cabinet_position;
+        return cabinetPosition;
     }
 
-    public void setCabinet_position(Integer cabinet_position) {
-        this.cabinet_position = cabinet_position;
+    public void setCabinetPosition(Integer cabinetPosition) {
+        this.cabinetPosition = cabinetPosition;
     }
 }

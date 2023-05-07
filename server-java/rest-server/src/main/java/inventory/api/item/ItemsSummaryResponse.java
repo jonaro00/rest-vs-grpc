@@ -1,4 +1,4 @@
-package com.example.restapi.api.item;
+package inventory.api.item;
 
 import java.util.List;
 
@@ -8,7 +8,6 @@ public class ItemsSummaryResponse {
     public ItemsSummaryResponse(List<ItemCitySummary> itemCitySummaries) {
         this.itemCitySummaries = itemCitySummaries;
     }
-    
 
     public List<ItemCitySummary> getItemCitySummaries() {
         return itemCitySummaries;
@@ -18,4 +17,3 @@ public class ItemsSummaryResponse {
         this.itemCitySummaries = itemCitySummaries;
     }
 }
-
