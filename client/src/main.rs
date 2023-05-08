@@ -12,7 +12,7 @@ use tokio::{
 use tonic::{transport::Channel, Request};
 
 /// The number of seconds to test each step when finding optimal thread count
-const DISCOVERY_SECONDS: usize = 10;
+const DISCOVERY_SECONDS: usize = 20;
 
 /// The number of seconds to run the final test for
 const TEST_SECONDS: usize = 100;
