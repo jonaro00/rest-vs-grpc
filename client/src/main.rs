@@ -110,6 +110,7 @@ trait RequestSpammer: Clone + 'static {
 
             sleep(Duration::from_secs(3)).await;
         }
+        sleep(Duration::from_secs(3)).await;
 
         // Run final test
         println!("Running test with {} clients...", clients);
