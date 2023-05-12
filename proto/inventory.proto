@@ -105,3 +105,10 @@ message Location {
   optional int32 room = 7;
   optional int32 cabinet_position = 8;
 }
+
+// demo
+message SearchRequest {
+  string query = 1;
+  int32 page_number = 2;
+  int32 result_per_page = 3;
+}
