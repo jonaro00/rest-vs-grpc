@@ -88,9 +88,8 @@ trait RequestSpammer: Clone + 'static {
     /// Then runs a large stress test.
     async fn run_full_test(&self) {
         let mut clients = 2;
-
-        // Increase number of clients until throughput flattens out
         let mut best_avg = 0.0;
+        // Increase number of clients until throughput flattens out
         loop {
             println!("Trying with {} clients...", clients);
             let (vec, avg) = self.run_one_test(clients, DISCOVERY_SECONDS).await;
@@ -130,7 +129,7 @@ trait RequestSpammer: Clone + 'static {
             .unwrap()
             .into();
 
-        // Adjust spammer count
+        // Start spammers
         let (tx, mut rx) = channel::<usize>(4096);
         for _ in 0..clients {
             spammers.push(spawn(self.clone().spam(start, tx.clone())));
