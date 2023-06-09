@@ -12,12 +12,25 @@ import java.util.UUID;
 
 @GRpcService
 public class InventoryServiceImpl extends InventoryGrpc.InventoryImplBase {
+
+    /**
+     * Overrides the heartBeat method to handle requests to the 'heartBeat' endpoint
+     *
+     * @param request          The Empty request
+     * @param responseObserver The StreamObserver for sending the response
+     */
     @Override
     public void heartBeat(Empty request, StreamObserver<Empty> responseObserver) {
         responseObserver.onNext(Empty.getDefaultInstance());
         responseObserver.onCompleted();
     }
-
+    
+    /**
+     * Overrides the itemsStatus method to handle requests to the 'itemsStatus' endpoint
+     *
+     * @param request          The Empty request
+     * @param responseObserver The StreamObserver for sending the response
+     */
     @Override
     public void itemsStatus(Empty request, StreamObserver<ItemsStatusResponse> responseObserver) {
         ItemsStatusResponse response = ItemsStatusResponse.newBuilder()
@@ -40,6 +53,12 @@ public class InventoryServiceImpl extends InventoryGrpc.InventoryImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     * Overrides the itemsSummary method to handle requests to the 'itemsSummary' endpoint
+     *
+     * @param request          The Empty request
+     * @param responseObserver The StreamObserver for sending the response
+     */
     @Override
     public void itemsSummary(Empty request, StreamObserver<ItemsSummaryResponse> responseObserver) {
         ItemCitySummary itemCitySummary = ItemCitySummary.newBuilder()
@@ -57,6 +76,12 @@ public class InventoryServiceImpl extends InventoryGrpc.InventoryImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     * Overrides the itemsFull method to handle requests to the 'itemsFull' endpoint
+     *
+     * @param request          The Empty request
+     * @param responseObserver The StreamObserver for sending the response
+     */
     @Override
     public void itemsFull(Empty request, StreamObserver<ItemsFullResponse> responseObserver) {
         ItemDetails itemDetails = ItemDetails.newBuilder()

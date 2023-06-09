@@ -1,5 +1,8 @@
 package inventory.api.item;
 
+/**
+ * Represents the details of an item.
+ */
 public class ItemDetails {
     private String uuid;
     private ItemType itemType;
@@ -10,6 +13,18 @@ public class ItemDetails {
     private Boolean discarded;
     private Location location;
 
+    /**
+     * Constructor for ItemDetails object with the given details
+     *
+     * @param uuid           The UUID of the item
+     * @param itemType       The type of the item
+     * @param brand          The brand of the item
+     * @param model          The model of the item
+     * @param serialNumber   The serial number of the item
+     * @param purchasePrice  The purchase price of the item
+     * @param discarded      Indicates whether the item is discarded
+     * @param location       The location of the item
+     */
     public ItemDetails(String uuid, ItemType itemType, String brand, String model,
             String serialNumber, Double purchasePrice, Boolean discarded, Location location) {
         this.uuid = uuid;
@@ -22,6 +37,7 @@ public class ItemDetails {
         this.location = location;
     }
 
+    /* Getters and setters */
     public String getUuid() {
         return uuid;
     }

@@ -18,10 +18,12 @@ from inventory_pb2_grpc import (
     add_InventoryServicer_to_server,
 )
 
-
 class Inventory(InventoryServicer):
+    # HeartBeat endpoint returns an empty message 
     def HeartBeat(self, request: Empty, context):
         return Empty()
+
+    # Items Status endpoint returns a mock items status response
     def ItemsStatus(self, request: Empty, context):
         return ItemsStatusResponse(
             status="success",
@@ -40,6 +42,8 @@ class Inventory(InventoryServicer):
             total_price=670432.55,
             average_price=56.07,
         )
+
+    # Items Summary endpoint
     def ItemsSummary(self, request: Empty, context):
         return ItemsSummaryResponse(
             item_city_summaries=[
@@ -52,6 +56,8 @@ class Inventory(InventoryServicer):
                 )
             ] * 480,
         )
+    
+    # Items Full endpoint
     def ItemsFull(self, request: Empty, context):
         return ItemsFullResponse(
             all_items=[
@@ -80,10 +86,13 @@ class Inventory(InventoryServicer):
 
 def serve():
     port = sys.argv[1] if len(sys.argv) >= 2 else "1337"
+    # Create the gRPC server
     server = grpc.server(futures.ThreadPoolExecutor())
     add_InventoryServicer_to_server(Inventory(), server)
     server.add_insecure_port(f"0.0.0.0:{port}")
     server.start()
+
+    # Keep the server running until terminated
     server.wait_for_termination()
 
-serve()
+serve() # Run the server

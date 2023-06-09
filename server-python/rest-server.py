@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse, Response
 from pydantic import BaseModel
 
-
+# Define enumeration for the item types
 class ItemType(str, Enum):
     UNSPECIFIED = 'UNSPECIFIED'
     CHAIR = 'CHAIR'
@@ -14,6 +14,7 @@ class ItemType(str, Enum):
     KEYBOARD = 'KEYBOARD'
     MOUSE = 'MOUSE'
 
+# Define model for the location
 class Location(BaseModel):
     city_uuid: str
     country: str | None
@@ -24,14 +25,17 @@ class Location(BaseModel):
     room: int | None
     cabinet_position: int | None
 
+# Define a model for the Item Summary
 class ItemSummary(BaseModel):
     item_type: ItemType
     count: int
 
+# Define a model for the Item City Summary
 class ItemCitySummary(BaseModel):
     city_uuid: str
     item_summary: ItemSummary
 
+# Define a model for the Item Details
 class ItemDetails(BaseModel):
     uuid: str
     item_type: ItemType
@@ -42,6 +46,7 @@ class ItemDetails(BaseModel):
     discarded: bool | None
     location: Location | None
 
+# Define a model for the Items Status Response
 class ItemsStatusResponse(BaseModel):
     status: str
     errors: list[str]
@@ -50,18 +55,23 @@ class ItemsStatusResponse(BaseModel):
     total_price: float
     average_price: float
 
+# Define a model for the Items Summary Response
 class ItemsSummaryResponse(BaseModel):
     item_city_summaries: list[ItemCitySummary]
 
+# Define a model for the Items Full Response
 class ItemsFullResponse(BaseModel):
     all_items: list[ItemDetails]
 
+# Create an instance of the FastAPI
 app = FastAPI()
 
+# Endpoint for heart_beat
 @app.get("/heart_beat")
 async def heart_beat():
     return Response() # empty 200 response
 
+# Endpoint for items_status
 @app.get("/items_status", response_class=ORJSONResponse)
 async def items_status():
     return ItemsStatusResponse(
@@ -82,6 +92,7 @@ async def items_status():
         average_price=56.07,
     )
 
+# Endpoint for items_summary
 @app.get("/items_summary", response_class=ORJSONResponse)
 async def items_summary():
     return ItemsSummaryResponse(
@@ -96,6 +107,7 @@ async def items_summary():
         ] * 480,
     )
 
+# Endpoint for items_full
 @app.get("/items_full", response_class=ORJSONResponse)
 async def items_full():
     return ItemsFullResponse(

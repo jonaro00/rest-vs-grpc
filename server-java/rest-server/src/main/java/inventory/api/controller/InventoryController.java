@@ -16,12 +16,23 @@ import java.util.Optional;
 
 @RestController
 public class InventoryController {
+    
 
+    /**
+     * The heart_beat endpoint. Returns an empty response.
+     *
+     * @return A ResponseEntity representing the success status
+     */
     @GetMapping("/heart_beat")
     public ResponseEntity<Void> heartBeat() {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Items Status endpoint
+     *
+     * @return An ItemsStatusResponse object
+     */
     @GetMapping("/items_status")
     public ItemsStatusResponse getItemsStatus() {
         return new ItemsStatusResponse(
@@ -41,6 +52,11 @@ public class InventoryController {
                 56.07f);
     }
 
+    /**
+     * Items Summary endpoint
+     *
+     * @return An ItemsSummaryResponse object
+     */
     @GetMapping("/items_summary")
     public ItemsSummaryResponse getItemsSummary() {
         ItemCitySummary itemCitySummary = new ItemCitySummary(
@@ -50,6 +66,11 @@ public class InventoryController {
         return new ItemsSummaryResponse(itemCitySummaries);
     }
 
+    /**
+     * Items Full endpoint
+     *
+     * @return An ItemsFullResponse object containing the details of all items
+     */
     @GetMapping("/items_full")
     public ItemsFullResponse getItemsFull() {
         ItemDetails item = new ItemDetails(

@@ -2,6 +2,9 @@ package inventory.api.item;
 
 import java.util.List;
 
+/**
+ * Represents a response containing the status of items
+ */
 public class ItemsStatusResponse {
     private String status;
     private List<String> errors;
@@ -10,6 +13,16 @@ public class ItemsStatusResponse {
     private float totalPrice;
     private float averagePrice;
 
+    /**
+     * Constructor for ItemsStatusResponse object
+     *
+     * @param status         The status of the items
+     * @param errors         The list of errors
+     * @param load           The load value
+     * @param totalItemCount The total item count
+     * @param totalPrice     The total price
+     * @param averagePrice   The average price
+     */
     public ItemsStatusResponse(String status, List<String> errors, float load,
             int totalItemCount, float totalPrice, float averagePrice) {
         this.status = status;
@@ -20,6 +33,7 @@ public class ItemsStatusResponse {
         this.averagePrice = averagePrice;
     }
 
+    /* Getters and setters */
     public String getStatus() {
         return status;
     }
