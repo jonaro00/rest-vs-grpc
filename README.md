@@ -4,8 +4,7 @@ By [@jonaro00](https://github.com/jonaro00) and [@Danielmebrahtu](https://github
 
 Bachelor's degree project in Computer Science at KTH Royal Institute of Technology
 
-Read the thesis: [link coming soon]
-
+Read the thesis: <https://urn.kb.se/resolve?urn=urn:nbn:se:kth:diva-334990>
 
 ## Project Details
 
@@ -13,15 +12,17 @@ The project consists of six servers and one client, implemented in three differe
 
 ## Server Details
 
-### REST API Servers:
-  - Java server using Spring framework
-  - Python server using FastAPI
-  - Rust server using Axum
+### REST API Servers
 
-### gRPC Servers:
-  - Java server using official gRPC library
-  - Python server using official grpcio library 
-  - Rust server using Tonic 
+- Java server using Spring framework
+- Python server using FastAPI
+- Rust server using Axum
+
+### gRPC Servers
+
+- Java server using official gRPC library
+- Python server using official grpcio library
+- Rust server using Tonic
 
 ## Client Details
 
